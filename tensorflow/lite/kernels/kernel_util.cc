@@ -194,7 +194,7 @@ TfLiteStatus CalculateActivationRangeQuantized(TfLiteContext* context,
     qmin = std::numeric_limits<int16_t>::min();
     qmax = std::numeric_limits<int16_t>::max();
   } else {
-    TF_LITE_ENSURE(context, false);
+//    TF_LITE_ENSURE(context, false);
   }
 
   CalculateActivationRangeQuantizedImpl(activation, qmin, qmax, output, act_min,
