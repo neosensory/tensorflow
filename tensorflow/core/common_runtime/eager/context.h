@@ -346,8 +346,8 @@ class EagerContext : public AbstractContextInterface, public core::RefCounted {
   RunMetadata* RunMetadataProto() { return &run_metadata_; }
   void ClearRunMetadata() TF_EXCLUSIVE_LOCKS_REQUIRED(metadata_mu_);
 
-  void StartStep();
-  void EndStep();
+  void StartStep() override;
+  void EndStep() override;
   ScopedStepContainer* StepContainer();
 
   FunctionLibraryDefinition* FuncLibDef() { return &func_lib_def_; }
@@ -482,6 +482,9 @@ class EagerContext : public AbstractContextInterface, public core::RefCounted {
   std::vector<const FunctionDef*> ListRegisteredFunctions();
 
   Status FindDeviceFromName(const char* device_name, Device** device) const;
+
+  Status FindCompositeDeviceFromName(const char* device_name,
+                                     CompositeDevice** device) const;
 
   Status FindCustomDeviceFromName(const string& device_name,
                                   CustomDevice** dev) const;

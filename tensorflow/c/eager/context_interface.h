@@ -79,6 +79,14 @@ class AbstractContextInterface {
   // List attributes of available devices
   virtual void ListDevices(std::vector<DeviceAttributes>* devices) = 0;
 
+  virtual void ClearCachesAndThreadExecutors() = 0;
+
+  // Initialize the step resource container for a training step. This is used
+  // in current TF runtime. For tfrt, it is used by fallback op handler.
+  virtual void StartStep() = 0;
+  // Destroy the step resource container for a training step.
+  virtual void EndStep() = 0;
+
  protected:
   virtual ~AbstractContextInterface() {}
 };
