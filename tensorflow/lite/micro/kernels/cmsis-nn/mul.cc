@@ -115,7 +115,7 @@ void EvalQuantized(TfLiteContext* context, TfLiteNode* node,
     bool need_broadcast = reference_ops::ProcessBroadcastShapes(
         tflite::micro::GetTensorShape(input1),
         tflite::micro::GetTensorShape(input2), &op_params);
-
+    need_broadcast = true;
 #define TF_LITE_MUL(type, opname, dtype)                         \
   type::opname(op_params, tflite::micro::GetTensorShape(input1), \
                tflite::micro::GetTensorData<dtype>(input1),      \
@@ -170,7 +170,7 @@ void EvalFloat(TfLiteContext* context, TfLiteNode* node,
                         tflite::micro::GetTensorData<float>(input2),      \
                         tflite::micro::GetTensorShape(output),            \
                         tflite::micro::GetTensorData<float>(output));
-
+//  need_broadcast = true;
   if (need_broadcast) {
     TF_LITE_MUL(BroadcastMul4DSlow);
   } else {

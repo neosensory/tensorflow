@@ -619,15 +619,7 @@ TfLiteStatus ParseOpDataTfLite(const Operator* op, BuiltinOperator op_type,
       *builtin_data = params.release();
       return kTfLiteOk;
     }
-    case BuiltinOperator_SPLIT_V: {
-      auto params = safe_allocator.Allocate<TfLiteSplitParams>();
-      TF_LITE_ENSURE(error_reporter, params != nullptr);
-      if (const auto* schema_params = op->builtin_options_as_SplitVOptions()) {
-        params->num_splits = schema_params->num_splits();
-      }
-      *builtin_data = params.release();
-      return kTfLiteOk;
-    }
+
     case BuiltinOperator_SQUEEZE: {
       auto params = safe_allocator.Allocate<TfLiteSqueezeParams>();
       TF_LITE_ENSURE(error_reporter, params != nullptr);
@@ -876,6 +868,30 @@ TfLiteStatus ConvertTensorType(TensorType tensor_type, TfLiteType* type,
                            "Unsupported data type %d in tensor\n", tensor_type);
       return kTfLiteError;
   }
+}
+
+TfLiteStatus ParseSplitV(const Operator* op, ErrorReporter* error_reporter,
+                         BuiltinDataAllocator* allocator, void** builtin_data) {
+  CheckParsePointerParams(op, error_reporter, allocator, builtin_data);
+  SafeBuiltinDataAllocator safe_allocator(allocator);
+
+  std::unique_ptr<TfLiteSplitVParams,
+                  SafeBuiltinDataAllocator::BuiltinDataDeleter>
+      params = safe_allocator.Allocate<TfLiteSplitVParams>();
+  TF_LITE_ENSURE(error_reporter, params != nullptr);
+
+  const SplitVOptions* schema_params = op->builtin_options_as_SplitVOptions();
+
+  if (schema_params != nullptr) {
+    params->num_splits = schema_params->num_splits();
+  } else {
+    // TODO(b/157480169): We should either return kTfLiteError or fill in some
+    // reasonable defaults in the params struct. We are not doing so until we
+    // better undertand the ramifications of changing the legacy behavior.
+  }
+
+  *builtin_data = params.release();
+  return kTfLiteOk;
 }
 
 // We have this parse function instead of directly returning kTfLiteOk from the

@@ -151,7 +151,7 @@ void EvalFloat(TfLiteContext* context, TfLiteNode* node,
   bool need_broadcast = reference_ops::ProcessBroadcastShapes(
       tflite::micro::GetTensorShape(input1),
       tflite::micro::GetTensorShape(input2), &op_params);
-
+  need_broadcast = true;
   if (need_broadcast) {
     reference_ops::BroadcastMul4DSlow(
         op_params, tflite::micro::GetTensorShape(input1),
