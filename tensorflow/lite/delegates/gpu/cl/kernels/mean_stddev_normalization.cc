@@ -75,13 +75,23 @@ static inline float4 filter_outside_tensor(float4 x, int num_channels, int slice
 }  // namespace
 
 MeanStdDevNormalization::MeanStdDevNormalization(const OperationDef& definition,
-                                                 const DeviceInfo& device_info)
+                                                 const DeviceInfo& device_info,
+                                                 const int tensor_slices)
     : GPUOperation(definition) {
   // The kernel code does not inherently need a fixed size, but in order to not
   // hardcode the __local array's size for the reductions, we would need to pass
   // that size to the kernel at runtime, and that is currently not supported.
-  // For now, fix workgroup size to 128 threads.
-  work_group_size_.x = 128;
+  // For now, fix workgroup size to the biggest supported by the device, but not
+  // larger than the number of tensor slices.
+  int desired_work_group_size =
+      std::min(tensor_slices, device_info.max_work_group_size_x);
+  if (device_info.IsMali() && desired_work_group_size > 64) {
+    // Don't use more than 64 work items per work group on ARM Mali. They
+    // implement local memory using the global memory, larger workgroups have
+    // severe performance penalty.
+    desired_work_group_size = 64;
+  }
+  work_group_size_.x = desired_work_group_size;
   work_group_size_.y = 1;  // Required
   work_group_size_.z = 1;  // Required
   code_ = GetNormalizationCode();
@@ -108,8 +118,6 @@ std::string MeanStdDevNormalization::GetNormalizationCode() {
        std::to_string(work_group_size_.x) + R"(];
 #endif
   const int B = get_global_id(1);
-  if (get_global_id(2) > 0) { return; }
-  if (B >= args.src_tensor.Batch()) { return; }
   // Calculate the total sum of the input tensor.
   // First, get a local sum of input[local_id_x + N*local_size_x] for all N.
   float4 private_sum4 = (float4)(0.0f);
@@ -156,8 +164,9 @@ int3 MeanStdDevNormalization::GetGridSize() const {
 }
 
 MeanStdDevNormalization CreateMeanStdDevNormalization(
-    const OperationDef& definition, const DeviceInfo& device_info) {
-  return MeanStdDevNormalization(definition, device_info);
+    const OperationDef& definition, const DeviceInfo& device_info,
+    const int tensor_slices) {
+  return MeanStdDevNormalization(definition, device_info, tensor_slices);
 }
 
 }  // namespace cl

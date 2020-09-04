@@ -191,6 +191,10 @@ absl::Status GPUOperationFromNode(const DeviceInfo& device_info,
         }
       } else {
         auto weights_shape = inputs[1]->tensor.shape;
+        if (attr.bias.data.empty()) {
+          attr.bias.shape = Linear(weights_shape.b);
+          attr.bias.data.resize(weights_shape.b, 0.0f);
+        }
         TensorDescriptor weights_desc = {op_def.src_tensors[1].data_type,
                                          TensorStorageType::BUFFER,
                                          Layout::BHWC};
@@ -261,8 +265,8 @@ absl::Status GPUOperationFromNode(const DeviceInfo& device_info,
       return SelectMean(attr, op_def, device_info, gpu_op);
     }
     case OperationType::MEAN_STDDEV_NORMALIZATION: {
-      MeanStdDevNormalization operation =
-          CreateMeanStdDevNormalization(op_def, device_info);
+      MeanStdDevNormalization operation = CreateMeanStdDevNormalization(
+          op_def, device_info, (inputs[0]->tensor.shape.c + 3) / 4);
       *gpu_op =
           absl::make_unique<MeanStdDevNormalization>(std::move(operation));
       return absl::OkStatus();
@@ -332,6 +336,7 @@ absl::Status GPUOperationFromNode(const DeviceInfo& device_info,
     case OperationType::EXP:
     case OperationType::HARD_SWISH:
     case OperationType::LOG:
+    case OperationType::NEG:
     case OperationType::RSQRT:
     case OperationType::SIGMOID:
     case OperationType::SIN:
