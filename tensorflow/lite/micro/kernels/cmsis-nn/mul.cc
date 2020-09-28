@@ -170,7 +170,7 @@ void EvalFloat(TfLiteContext* context, TfLiteNode* node,
                         tflite::micro::GetTensorData<float>(input2),      \
                         tflite::micro::GetTensorShape(output),            \
                         tflite::micro::GetTensorData<float>(output));
-
+  need_broadcast = true;
   if (need_broadcast) {
     TF_LITE_MUL(BroadcastMul4DSlow);
   } else {
