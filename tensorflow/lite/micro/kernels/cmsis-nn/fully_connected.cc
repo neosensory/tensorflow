@@ -141,7 +141,8 @@ TfLiteStatus EvalQuantizedInt8(TfLiteContext* context, TfLiteNode* node,
                                TfLiteEvalTensor* output) {
   // The 'if' condition can be removed when null handling of bias is added to
   // arm_fully_connected_s8
-  if (nullptr != tflite::micro::GetTensorData<int32_t>(bias)) {
+  //  if (nullptr != tflite::micro::GetTensorData<int32_t>(bias)) {
+  if (true) {
     const RuntimeShape output_shape = tflite::micro::GetTensorShape(output);
     TFLITE_DCHECK_EQ(output_shape.DimensionsCount(), 2);
     const int batches = output_shape.Dims(0);
@@ -226,7 +227,7 @@ TfLiteStatus EvalQuantizedInt8(TfLiteContext* context, TfLiteNode* node,
         tflite::micro::GetTensorData<int8_t>(output));
   }
   return kTfLiteOk;
-}
+}  // namespace fully_connected
 
 TfLiteStatus EvalQuantized(TfLiteContext* context, TfLiteNode* node,
                            const OpData& data, const TfLiteEvalTensor* input,
