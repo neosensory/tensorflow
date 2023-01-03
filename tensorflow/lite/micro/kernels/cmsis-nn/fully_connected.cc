@@ -204,7 +204,7 @@ TfLiteStatus EvalQuantizedInt8(TfLiteContext* context, TfLiteNode* node,
             tflite::micro::GetTensorData<int8_t>(filter), &bias_dims,
             tflite::micro::GetTensorData<int32_t>(bias), &output_dims,
             tflite::micro::GetTensorData<int8_t>(output)),
-        ARM_MATH_SUCCESS);
+        ARM_CMSIS_NN_SUCCESS);
   } else {
     tflite::FullyConnectedParams op_params;
     op_params.input_offset = -data.input_zero_point;

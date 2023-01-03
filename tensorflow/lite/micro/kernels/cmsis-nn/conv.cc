@@ -321,14 +321,14 @@ TfLiteStatus EvalQuantizedPerChannel(
 
   // arm_convolve_wrapper_s8 dispatches the optimized kernel accordingly with
   // the parameters passed
-  arm_status status = arm_convolve_wrapper_s8(
+  auto status = arm_convolve_wrapper_s8(
       &ctx, &conv_params, &quant_params, &input_dims,
       tflite::micro::GetTensorData<int8_t>(input), &filter_dims,
       tflite::micro::GetTensorData<int8_t>(filter), &bias_dims,
       tflite::micro::GetTensorData<int32_t>(bias), &output_dims,
       tflite::micro::GetTensorData<int8_t>(output));
 
-  if (status == ARM_MATH_SUCCESS) {
+  if (status == ARM_CMSIS_NN_SUCCESS) {
     return kTfLiteOk;
   } else {
     return kTfLiteError;
